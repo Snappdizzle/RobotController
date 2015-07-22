@@ -7,6 +7,7 @@ from robot import Robot
 import random
 import time
 from robotControl import RobotControl
+"""Import all important files and systems"""
 
 BUFF_SIZE = 4096
 MCAST_GRP = '239.21.21.11'
@@ -14,6 +15,7 @@ MCAST_PORT = 2121
 _mCastSock = None
 
 def padding(str):
+    """Function that creates new lines between print statements"""
     nl = "\n\n"
     return nl + str + nl
 
@@ -21,6 +23,7 @@ def pp(str):
     print padding(str)
 
 def getMCastSock():
+    """Function that creates and opens a Multicast socket letting you find robots to connect to"""
     global _mCastSock
     if _mCastSock == None:
         mcs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -33,6 +36,7 @@ def getMCastSock():
 
 
 def doScan():
+    """Function that scans for robots and lists them"""
     m_sock = getMCastSock()
     robot_ip_tpl = m_sock.recvfrom(BUFF_SIZE)
     robot_json = robot_ip_tpl[0]
@@ -51,6 +55,7 @@ def doScan():
 
 
 def scanUntilFound(robotName):
+    """Function that scans for robots unitl it finds a robot with a matching name yoou entered"""
     print "Scanning for robot named", robotName
     while True:
         for some_robot in doScan():
@@ -60,6 +65,7 @@ def scanUntilFound(robotName):
 
 
 def scanAndListRobots(numScans = 5):
+    """function that scans for robots a given amount of times, and lists all robots found within that nuber of scans (If you want more scans change 'numScans' to a different value)"""
     scanCnt = 0
     robots = {}
     while scanCnt < numScans:
@@ -68,29 +74,25 @@ def scanAndListRobots(numScans = 5):
             robots[r.robotId] = r
         time.sleep(2)
         scanCnt += 1
-    return robots
+    return robots.values()
 
 
+print "Scanning for available robots ..."
+fndRbts = scanAndListRobots(3)
 
+print "--------------------------------"
+print "Found robots: "
+print "--------------------------------"
+for idx, r in enumerate(fndRbts, start=1):
+    print idx, "-----> ", r.name
+
+print ""
+tgtRobotName = raw_input("Please enter your robot's name: ")
 print "Scanning for robots..."
-apple = scanUntilFound('Drew')      #(raw_input("What is your robot's name? "))
-apple.connect()
+yourRobot = scanUntilFound(tgtRobotName)
+yourRobot.connect()
 
-rbtCtrl = RobotControl(apple)
+rbtCtrl = RobotControl(yourRobot)
 rbtCtrl.start()
 
-apple.disconnect()
-
-
-'''
-apple.set_left_ear_rgb(1, 0, 0)
-apple.set_right_ear_rgb(1, 0, 0)
-apple.set_chest_rgb(1, 0, 0)
-apple.pan_head(120)
-apple.send_cmd_set()
-time.sleep(4)
-apple.lin_ang_body(50.0, 1.0, 30.0, 12)
-time.sleep(3)
-apple.send_cmd_set()
-apple.disconnect()
-'''
+yourRobot.disconnect()
